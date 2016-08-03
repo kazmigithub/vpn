@@ -252,7 +252,7 @@ chkconfig crond on
 
 # info
 clear
-echo "script by KangArie | edit by amyxo" | tee log-install.txt
+echo "script by KangArie | customized by Kazmi" | tee log-install.txt
 echo "==================================" | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Service"  | tee -a log-install.txt
@@ -297,9 +297,5 @@ echo "Log Install --> /root/log-install.txt"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Fail openvpn anda sila taip di browser : http://$MYIP/client.tar" | tee -a log-install.txt
 echo "SILA REBOOT VPS ANDA | taip reboot"  | tee -a log-install.txt
-echo ""  | tee -a log-install.txt
-echo "==============================================="  | tee -a log-install.txt
-echo "Installer ini telah di edit oleh amyxo untuk link yg tidak berfungsi lg"  | tee -a log-install.txt
-echo "Mana2 link dr pembuat asal script ini KangArie yg berfungsi masih di kekalkan"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "============================================================================="  | tee -a log-install.txt
