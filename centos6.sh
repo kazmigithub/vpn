@@ -45,7 +45,6 @@ rm -f *.rpm
 yum -y remove sendmail;
 yum -y remove httpd;
 yum -y remove cyrus-sasl;
-yum -y remove samba
 
 # update
 yum -y update
@@ -58,21 +57,19 @@ chkconfig nginx on
 chkconfig php-fpm on
 
 # install essential package
-yum -y install rrdtool screen iftop htop nmap bc nethogs vnstat ngrep mtr git zsh mrtg unrar rsyslog rkhunter mrtg net-snmp net-snmp-utils expect nano bind-utils
+yum -y install iftop htop nmap bc nethogs openvpn vnstat ngrep mtr git zsh mrtg unrar rsyslog rkhunter mrtg net-snmp net-snmp-utils expect nano bind-utils
 yum -y groupinstall 'Development Tools'
 yum -y install cmake
 
-yum -y --enablerepo=rpmforge install axel sslh ptunnel unrar
-
-# disable exim
+# matiin exim
 service exim stop
 chkconfig exim off
 
 # setting vnstat
-vnstat -u -i venet0
+vnstat -u -i $ether
 echo "MAILTO=root" > /etc/cron.d/vnstat
 echo "*/5 * * * * root /usr/sbin/vnstat.cron" >> /etc/cron.d/vnstat
-sed -i 's/eth0/venet0/g' /etc/sysconfig/vnstat
+sed -i "s/eth0/$ether/" /etc/sysconfig/vnstat
 service vnstat restart
 chkconfig vnstat on
 
@@ -86,27 +83,28 @@ echo "screenfetch" >> .bash_profile
 
 # install webserver
 cd
-wget -O /etc/nginx/nginx.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/nginx.conf"
+wget -O /etc/nginx/nginx.conf "https://raw.github.com/ardi85/autoscript/master/nginx.conf"
 sed -i 's/www-data/nginx/g' /etc/nginx/nginx.conf
 mkdir -p /home/vps/public_html
-echo "<pre>Customized by Kazmi</pre>" > /home/vps/public_html/index.html
+echo "<pre>cuma index biasa</pre>" > /home/vps/public_html/index.html
 echo "<?php phpinfo(); ?>" > /home/vps/public_html/info.php
 rm /etc/nginx/conf.d/*
-wget -O /etc/nginx/conf.d/vps.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/vps.conf"
+wget -O /etc/nginx/conf.d/vps.conf "https://raw.github.com/ardi85/autoscript/master/vps.conf"
 sed -i 's/apache/nginx/g' /etc/php-fpm.d/www.conf
 chmod -R +rx /home/vps
 service php-fpm restart
 service nginx restart
 
 # install openvpn
-wget -O /etc/openvpn/openvpn.tar "https://raw.githubusercontent.com/kazmigithub/vpn/master/openvpn-debian.tar"
+wget -O /etc/openvpn/openvpn.tar "https://raw.github.com/arieonline/autoscript/master/conf/openvpn-debian.tar"
 cd /etc/openvpn/
 tar xf openvpn.tar
-wget -O /etc/openvpn/1194.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/vps.conf"
+wget -O /etc/openvpn/1194.conf "https://raw.github.com/arieonline/autoscript/master/conf/1194-centos.conf"
+OS=`uname -p`;
 if [ "$OS" == "x86_64" ]; then
-  wget -O /etc/openvpn/1194.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/1194-centos64.conf"
+  wget -O /etc/openvpn/1194.conf "https://raw.github.com/arieonline/autoscript/master/conf/1194-centos64.conf"
 fi
-wget -O /etc/iptables.up.rules "https://raw.githubusercontent.com/kazmigithub/vpn/master/iptables.up.rules"
+wget -O /etc/iptables.up.rules "https://raw.github.com/arieonline/autoscript/master/conf/iptables.up.rules"
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.local
 sed -i '$ i\iptables-restore < /etc/iptables.up.rules' /etc/rc.d/rc.local
 MYIP=`curl -s ifconfig.me`;
@@ -124,14 +122,18 @@ cd /etc/openvpn/
 wget -O /etc/openvpn/1194-client.ovpn "https://raw.github.com/arieonline/autoscript/master/conf/1194-client.conf"
 sed -i $MYIP2 /etc/openvpn/1194-client.ovpn;
 PASS=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 15 | head -n 1`;
+useradd -M -s /bin/false kazmi
+echo "kazmi:$PASS" | chpasswd
+echo "kazmi" > pass.txt
+echo "$PASS" >> pass.txt
 tar cf client.tar 1194-client.ovpn pass.txt
 cp client.tar /home/vps/public_html/
 cd
 
 # install badvpn
-wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/kazmigithub/vpn/master/badvpn-udpgw"
+wget -O /usr/bin/badvpn-udpgw "https://raw.github.com/yurisshOS/centos6/master/badvpn-udpgw"
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/badvpn-udpgw "https://raw.githubusercontent.com/kazmigithub/vpn/master/badvpn-udpgw64"
+  wget -O /usr/bin/badvpn-udpgw "https://raw.github.com/yurisshOS/centos6/master/badvpn-udpgw64"
 fi
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.local
 sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/rc.d/rc.local
@@ -140,15 +142,15 @@ screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
 # install mrtg
 cd /etc/snmp/
-wget -O /etc/snmp/snmpd.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/snmpd.conf"
-wget -O /root/mrtg-mem.sh "https://raw.githubusercontent.com/kazmigithub/vpn/master/mrtg-mem.sh"
+wget -O /etc/snmp/snmpd.conf "https://raw.github.com/yurisshOS/centos6/master/snmpd.conf"
+wget -O /root/mrtg-mem.sh "https://raw.github.com/yurisshOS/centos6/master/mrtg-mem.sh"
 chmod +x /root/mrtg-mem.sh
 service snmpd restart
 chkconfig snmpd on
 snmpwalk -v 1 -c public localhost | tail
 mkdir -p /home/vps/public_html/mrtg
 cfgmaker --zero-speed 100000000 --global 'WorkDir: /home/vps/public_html/mrtg' --output /etc/mrtg/mrtg.cfg public@localhost
-curl  "https://raw.githubusercontent.com/kazmigithub/vpn/master/mrtg.conf" >> /etc/mrtg/mrtg.cfg
+curl  "https://raw.github.com/yurisshOS/centos6/master/mrtg.conf" >> /etc/mrtg/mrtg.cfg
 sed -i 's/WorkDir: \/var\/www\/mrtg/# WorkDir: \/var\/www\/mrtg/g' /etc/mrtg/mrtg.cfg
 sed -i 's/# Options\[_\]: growright, bits/Options\[_\]: growright/g' /etc/mrtg/mrtg.cfg
 indexmaker --output=/home/vps/public_html/mrtg/index.html /etc/mrtg/mrtg.cfg
@@ -193,7 +195,7 @@ chkconfig fail2ban on
 
 # install squid
 yum -y install squid
-wget -O /etc/squid/squid.conf "https://raw.githubusercontent.com/kazmigithub/vpn/master/squid-centos.conf"
+wget -O /etc/squid/squid.conf "https://raw.github.com/yurisshOS/centos6/master/squid-centos.conf"
 sed -i $MYIP2 /etc/squid/squid.conf;
 service squid restart
 chkconfig squid on
@@ -207,19 +209,19 @@ chkconfig webmin on
 
 # install bmon
 if [ "$OS" == "x86_64" ]; then
-  wget -O /usr/bin/bmon "https://raw.githubusercontent.com/kazmigithub/vpn/master/bmon64"
+  wget -O /usr/bin/bmon "https://raw.github.com/yurisshOS/centos6/master/bmon64"
 else
-  wget -O /usr/bin/bmon "https://raw.githubusercontent.com/kazmigithub/vpn/master/bmon"
+  wget -O /usr/bin/bmon "https://raw.github.com/yurisshOS/centos6/master/bmon"
 fi
 chmod +x /usr/bin/bmon
 
 # download script
 cd
 wget -O speedtest_cli.py "https://raw.github.com/sivel/speedtest-cli/master/speedtest_cli.py"
-wget -O bench-network.sh "https://raw.githubusercontent.com/kazmigithub/vpn/master/bench-network.sh"
+wget -O bench-network.sh "https://raw.github.com/yurisshOS/centos6/master/bench-network.sh"
 wget -O ps_mem.py "https://raw.github.com/pixelb/ps_mem/master/ps_mem.py"
-wget -O userlogin.sh "https://raw.githubusercontent.com/kazmigithub/vpn/master/userlogin.sh"
-wget -O userexpired.sh "https://raw.githubusercontent.com/kazmigithub/vpn/master/userexpired.sh"
+wget -O userlogin.sh "https://raw.github.com/yurisshOS/centos6/master/userlogin.sh"
+wget -O userexpired.sh "https://raw.github.com/yurisshOS/centos6/master/userexpired.sh"
 chmod +x bench-network.sh
 chmod +x speedtest_cli.py
 chmod +x ps_mem.py
@@ -267,7 +269,7 @@ echo "==========================================" | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Service"  | tee -a log-install.txt
 echo "-------"  | tee -a log-install.txt
-echo "OpenVPN  : TCP 1194 (client config : http://$MYIP/client.tar)"  | tee -a log-install.txt
+echo "OpenVPN  : TCP 1194 (client config : http://$MYIP:81/client.tar)"  | tee -a log-install.txt
 echo "OpenSSH  : 22, 80"  | tee -a log-install.txt
 echo "Dropbear : 443"  | tee -a log-install.txt
 echo "Squid   : 8080 (limit to IP SSH)"  | tee -a log-install.txt
@@ -302,7 +304,7 @@ echo "Fail2Ban : [on]"  | tee -a log-install.txt
 echo "IPv6     : [off]"  | tee -a log-install.txt
 echo "Autolimit 2 bitvise per IP to all port (port 22, 80, 443, 1194, 7300 TCP/UDP)"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
-echo "Script Customized by Kazmi"  | tee -a log-install.txt
+echo "AutoScript customized by Kazmi"  | tee -a log-install.txt
 echo "Thanks to Original Creator Kang Arie & Mikodemos" | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "SILAHKAN REBOOT VPS ANDA !"  | tee -a log-install.txt
