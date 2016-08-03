@@ -56,6 +56,8 @@ yum -y install iftop htop nmap bc nethogs openvpn ngrep mtr git zsh mrtg unrar r
 yum -y groupinstall 'Development Tools'
 yum -y install cmake
 
+yum -y --enablerepo=rpmforge install axel sslh ptunnel unrar
+
 # matiin exim
 service exim stop
 chkconfig exim off
@@ -187,11 +189,13 @@ chmod +x /usr/bin/bmon
 cd
 wget -O userlogin.sh "https://raw.github.com/yurisshOS/centos6/master/userlogin.sh"
 wget -O userexpired.sh "https://raw.github.com/yurisshOS/centos6/master/userexpired.sh"
+wget -O limit.sh "https://raw.github.com/arieonline/autoscript/master/conf/limit.sh"
+echo "*/10 * * * * root /root/userexpired.sh" >> /etc/cron.d/userexpired
+sed -i '$ i\screen -AmdS limit /root/limit.sh' /etc/rc.local
+sed -i '$ i\screen -AmdS limit /root/limit.sh' /etc/rc.d/rc.local
 chmod +x userlogin.sh
 chmod +x userexpired.sh
-echo "*/10 * * * * root /root/userexpired.sh" >> /etc/cron.d/userexpired
-echo "0 */6 * * * root /sbin/reboot" > /etc/cron.d/reboot
-
+chmod +x limit.sh
 
 # cron
 service crond start
