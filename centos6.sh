@@ -220,6 +220,8 @@ wget -O speedtest_cli.py "https://raw.github.com/sivel/speedtest-cli/master/spee
 wget -O bench-network.sh "https://raw.github.com/arieonline/autoscript/master/conf/bench-network.sh"
 wget -O ps_mem.py "https://raw.github.com/pixelb/ps_mem/master/ps_mem.py"
 wget -O limit.sh "https://raw.github.com/arieonline/autoscript/master/conf/limit.sh"
+wget -O userlogin.sh "https://raw.github.com/yurisshOS/centos6/master/userlogin.sh"
+wget -O userexpired.sh "https://raw.github.com/yurisshOS/centos6/master/userexpired.sh"
 echo "0 0 * * * root /root/user-expire.sh" > /etc/cron.d/user-expire
 sed -i '$ i\screen -AmdS limit /root/limit.sh' /etc/rc.local
 sed -i '$ i\screen -AmdS limit /root/limit.sh' /etc/rc.d/rc.local
@@ -227,6 +229,8 @@ chmod +x bench-network.sh
 chmod +x speedtest_cli.py
 chmod +x ps_mem.py
 chmod +x limit.sh
+chmod +x userlogin.sh
+chmod +x userexpired.sh
 
 # cron
 service crond start
