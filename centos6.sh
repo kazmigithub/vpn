@@ -55,21 +55,13 @@ chkconfig nginx on
 chkconfig php-fpm on
 
 # install essential package
-yum -y install iftop htop nmap bc nethogs openvpn vnstat ngrep mtr git zsh mrtg unrar rsyslog rkhunter mrtg net-snmp net-snmp-utils expect nano bind-utils
+yum -y install iftop htop nmap bc nethogs openvpn ngrep mtr git zsh unrar rsyslog rkhunter net-snmp net-snmp-utils expect nano bind-utils
 yum -y groupinstall 'Development Tools'
 yum -y install cmake
 
 # matiin exim
 service exim stop
 chkconfig exim off
-
-# setting vnstat
-vnstat -u -i $ether
-echo "MAILTO=root" > /etc/cron.d/vnstat
-echo "*/5 * * * * root /usr/sbin/vnstat.cron" >> /etc/cron.d/vnstat
-sed -i "s/eth0/$ether/" /etc/sysconfig/vnstat
-service vnstat restart
-chkconfig vnstat on
 
 # install screenfetch
 cd
@@ -138,26 +130,6 @@ sed -i '$ i\screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300' /etc/
 chmod +x /usr/bin/badvpn-udpgw
 screen -AmdS badvpn badvpn-udpgw --listen-addr 127.0.0.1:7300
 
-# install mrtg
-cd /etc/snmp/
-wget -O /etc/snmp/snmpd.conf "https://raw.github.com/yurisshOS/centos6/master/snmpd.conf"
-wget -O /root/mrtg-mem.sh "https://raw.github.com/yurisshOS/centos6/master/mrtg-mem.sh"
-chmod +x /root/mrtg-mem.sh
-service snmpd restart
-chkconfig snmpd on
-snmpwalk -v 1 -c public localhost | tail
-mkdir -p /home/vps/public_html/mrtg
-cfgmaker --zero-speed 100000000 --global 'WorkDir: /home/vps/public_html/mrtg' --output /etc/mrtg/mrtg.cfg public@localhost
-curl  "https://raw.github.com/yurisshOS/centos6/master/mrtg.conf" >> /etc/mrtg/mrtg.cfg
-sed -i 's/WorkDir: \/var\/www\/mrtg/# WorkDir: \/var\/www\/mrtg/g' /etc/mrtg/mrtg.cfg
-sed -i 's/# Options\[_\]: growright, bits/Options\[_\]: growright/g' /etc/mrtg/mrtg.cfg
-indexmaker --output=/home/vps/public_html/mrtg/index.html /etc/mrtg/mrtg.cfg
-echo "0-59/5 * * * * root env LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg" > /etc/cron.d/mrtg
-LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg
-LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg
-LANG=C /usr/bin/mrtg /etc/mrtg/mrtg.cfg
-cd
-
 # setting port ssh
 sed -i '/Port 22/a Port 80' /etc/ssh/sshd_config
 sed -i 's/Port 22/Port  22/g' /etc/ssh/sshd_config
@@ -171,25 +143,6 @@ echo "/bin/false" >> /etc/shells
 echo "/sbin/nologin" >> /etc/shells
 service dropbear restart
 chkconfig dropbear on
-
-# install vnstat gui
-cd /home/vps/public_html/
-wget http://www.sqweek.com/sqweek/files/vnstat_php_frontend-1.5.1.tar.gz
-tar xf vnstat_php_frontend-1.5.1.tar.gz
-rm vnstat_php_frontend-1.5.1.tar.gz
-mv vnstat_php_frontend-1.5.1 vnstat
-cd vnstat
-sed -i 's/eth0/venet0/g' config.php
-sed -i "s/\$iface_list = array('venet0', 'sixxs');/\$iface_list = array('venet0');/g" config.php
-sed -i "s/\$language = 'nl';/\$language = 'en';/g" config.php
-sed -i 's/Internal/Internet/g' config.php
-sed -i '/SixXS IPv6/d' config.php
-cd
-
-# install fail2ban
-yum -y install fail2ban
-service fail2ban restart
-chkconfig fail2ban on
 
 # install squid
 yum -y install squid
@@ -215,14 +168,8 @@ chmod +x /usr/bin/bmon
 
 # download script
 cd
-wget -O speedtest_cli.py "https://raw.github.com/sivel/speedtest-cli/master/speedtest_cli.py"
-wget -O bench-network.sh "https://raw.github.com/yurisshOS/centos6/master/bench-network.sh"
-wget -O ps_mem.py "https://raw.github.com/pixelb/ps_mem/master/ps_mem.py"
 wget -O userlogin.sh "https://raw.github.com/yurisshOS/centos6/master/userlogin.sh"
 wget -O userexpired.sh "https://raw.github.com/yurisshOS/centos6/master/userexpired.sh"
-chmod +x bench-network.sh
-chmod +x speedtest_cli.py
-chmod +x ps_mem.py
 chmod +x userlogin.sh
 chmod +x userexpired.sh
 echo "*/10 * * * * root /root/userexpired.sh" >> /etc/cron.d/userexpired
@@ -247,12 +194,10 @@ chkconfig iptables on
 chown -R nginx:nginx /home/vps/public_html
 service nginx restart
 service php-fpm restart
-service vnstat restart
 service openvpn restart
 service snmpd restart
 service sshd restart
 service dropbear restart
-service fail2ban restart
 service squid restart
 service webmin restart
 service crond restart
@@ -286,19 +231,13 @@ echo ""  | tee -a log-install.txt
 echo "Script"  | tee -a log-install.txt
 echo "------"  | tee -a log-install.txt
 echo "screenfetch"  | tee -a log-install.txt
-echo "./ps_mem.py"  | tee -a log-install.txt
-echo "./speedtest_cli.py --share"  | tee -a log-install.txt
-echo "./bench-network.sh"  | tee -a log-install.txt
 echo "./userlogin.sh"  | tee -a log-install.txt
 echo "./userexpired.sh >> auto running tiap 10jam"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Fitur lain"  | tee -a log-install.txt
 echo "----------"  | tee -a log-install.txt
 echo "Webmin   : http://$MYIP:10000/"  | tee -a log-install.txt
-echo "vnstat   : http://$MYIP:81/vnstat/"  | tee -a log-install.txt
-echo "MRTG     : http://$MYIP:81/mrtg/"  | tee -a log-install.txt
 echo "Timezone : Asia/Kuala Lumpur"  | tee -a log-install.txt
-echo "Fail2Ban : [on]"  | tee -a log-install.txt
 echo "IPv6     : [off]"  | tee -a log-install.txt
 echo "Autolimit 2 bitvise per IP to all port (port 22, 80, 443, 1194, 7300 TCP/UDP)"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
