@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# initialisasi var
-OS=`uname -m`;
-
 # go to root
 cd
 
@@ -90,7 +87,7 @@ wget -O /etc/openvpn/openvpn.tar "https://raw.github.com/arieonline/autoscript/m
 cd /etc/openvpn/
 tar xf openvpn.tar
 wget -O /etc/openvpn/1194.conf "https://raw.github.com/arieonline/autoscript/master/conf/1194-centos.conf"
-OS=`uname -p`;
+OS=`uname -m`;
 if [ "$OS" == "x86_64" ]; then
   wget -O /etc/openvpn/1194.conf "https://raw.github.com/arieonline/autoscript/master/conf/1194-centos64.conf"
 fi
