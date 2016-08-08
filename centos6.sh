@@ -16,7 +16,7 @@ sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.local
 sed -i '$ i\echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6' /etc/rc.d/rc.local
 
 # set time GMT +8
-ln -s /usr/share/zoneinfo/Asia/Singapore /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Kuala_Lumpur /etc/localtime
 
 # set locale
 sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
@@ -171,7 +171,7 @@ chkconfig sshd on
 
 # install dropbear
 yum -y install dropbear
-echo "OPTIONS=\"-p 109 -p 110 -p 443\"" > /etc/sysconfig/dropbear
+echo "OPTIONS=\"-p 109 -p 110 -p 2222\"" > /etc/sysconfig/dropbear
 echo "/bin/false" >> /etc/shells
 service dropbear restart
 chkconfig dropbear on
@@ -263,8 +263,8 @@ echo "Service"  | tee -a log-install.txt
 echo "-------"  | tee -a log-install.txt
 echo "OpenVPN  : TCP 1194 (client config : http://$MYIP/client.tar)"  | tee -a log-install.txt
 echo "OpenSSH  : 22, 143"  | tee -a log-install.txt
-echo "Dropbear : 109, 110, 443"  | tee -a log-install.txt
-echo "Squid3   : 8080 (limit to IP SSH)"  | tee -a log-install.txt
+echo "Dropbear : 109, 110, 2222"  | tee -a log-install.txt
+echo "Squid3   : 443 (limit to IP SSH)"  | tee -a log-install.txt
 echo "badvpn   : badvpn-udpgw port 7300"  | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Tools"  | tee -a log-install.txt
