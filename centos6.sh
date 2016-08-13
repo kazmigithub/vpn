@@ -256,7 +256,7 @@ chkconfig crond on
 
 # info
 clear
-echo "script by KangArie | customized by Kazmi" | tee log-install.txt
+echo "script by KangArie | customized by KAzmi" | tee log-install.txt
 echo "==================================" | tee -a log-install.txt
 echo ""  | tee -a log-install.txt
 echo "Service"  | tee -a log-install.txt
